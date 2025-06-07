@@ -1,6 +1,5 @@
 const axios = require('axios');
 const { Octokit } = require('@octokit/rest');
-const fetch = require('node-fetch');
 
 const todoistToken = process.env.TODOIST_API_KEY;
 const gistId = process.env.GIST_ID;
