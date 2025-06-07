@@ -37,13 +37,17 @@ async function updateGist(data) {
   }
 
   const lines = [];
+  lines.push('🦇🦇 **BADMAN Todoist Stats** 🦇🦇\n');
   const { karma, completed_count, days_items, week_items, goals } = data;
-
-  if (karma !== undefined) lines.push(`🏆 ${formatNumber(karma)} Karma Points`);
-  if (days_items && days_items[0]) lines.push(`🌞 Completed ${formatNumber(days_items[0].total_completed)} tasks today`);
-  if (week_items && week_items[0]) lines.push(`📅 Completed ${formatNumber(week_items[0].total_completed)} tasks this week`);
-  if (completed_count !== undefined) lines.push(`✅ Completed ${formatNumber(completed_count)} tasks so far`);
-  if (goals && goals.last_daily_streak) lines.push(`⌛ Current streak is ${formatNumber(goals.last_daily_streak.count)} days`);
+  if (karma !== undefined) lines.push(`🦸‍♂️ **${formatNumber(karma)}** Karma Points`);
+  if (days_items && days_items[0]) lines.push(`🌃 **${formatNumber(days_items[0].total_completed)}** tasks completed tonight`);
+  if (week_items && week_items[0]) lines.push(`🦹‍♂️ **${formatNumber(week_items[0].total_completed)}** tasks completed this week`);
+  if (completed_count !== undefined) lines.push(`🦇 **${formatNumber(completed_count)}** tasks completed so far`);
+  if (goals && goals.last_daily_streak) lines.push(`🦾 **${formatNumber(goals.last_daily_streak.count)}**-night streak`);
+  lines.push('\n🦇🦇🦇🦇🦇🦇🦇\n');
+  lines.push('"The night is darkest just before the dawn. And I promise you, the dawn is coming."');
+  lines.push('"All men have limits. They learn what they are and learn not to exceed them. I ignore mine."');
+  lines.push(`\n_Updated at ${new Date().toLocaleString()}_`);
 
   if (lines.length === 0) return;
 
@@ -53,7 +57,7 @@ async function updateGist(data) {
       gist_id: gistId,
       files: {
         [filename]: {
-          filename: `✅ Todoist Stats`,
+          filename: ` Todoist Stats`,
           content: lines.join("\n"),
         },
       },
