@@ -1,15 +1,3 @@
-// Only require dotenv if not running in GitHub Actions
-defineDotenv();
-function defineDotenv() {
-  if (!process.env.GITHUB_ACTIONS) {
-    try {
-      require('dotenv').config();
-    } catch (e) {
-      // dotenv not installed, ignore for CI
-    }
-  }
-}
-
 const axios = require('axios');
 const humanize = require("humanize-number");
 const { getOctokit } = require("@actions/github");
