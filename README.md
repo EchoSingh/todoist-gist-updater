@@ -10,7 +10,7 @@ This project automatically updates a GitHub Gist with your Todoist productivity 
 ✅  7 tasks completed so far
 🔥  1-night streak
 ```
-See it live: [Your Gist](https://gist.github.com/EchoSingh/a69a6866ee53ca5367154074b5cc328b)
+See it live: [My Gist](https://gist.github.com/EchoSingh/a69a6866ee53ca5367154074b5cc328b)
 
 ## ✨ Features
 - Fetches your Todoist completed stats (karma, today, week, total, streak)
