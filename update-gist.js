@@ -1,5 +1,4 @@
 const axios = require('axios');
-const humanize = require("humanize-number");
 const { getOctokit } = require("@actions/github");
 const fetch = require("node-fetch");
 
@@ -8,6 +7,8 @@ const gistId = process.env.GIST_ID;
 const githubToken = process.env.GH_TOKEN;
 
 const octokit = getOctokit(githubToken);
+
+const formatNumber = (n) => (typeof n === 'number' ? n.toLocaleString() : n);
 
 async function fetchKarma() {
   try {
@@ -40,11 +41,11 @@ async function updateGist(data) {
   const lines = [];
   const { karma, completed_count, days_items, week_items, goals } = data;
 
-  if (karma !== undefined) lines.push(`🏆 ${humanize(karma)} Karma Points`);
-  if (days_items && days_items[0]) lines.push(`🌞 Completed ${days_items[0].total_completed} tasks today`);
-  if (week_items && week_items[0]) lines.push(`📅 Completed ${week_items[0].total_completed} tasks this week`);
-  if (completed_count !== undefined) lines.push(`✅ Completed ${humanize(completed_count)} tasks so far`);
-  if (goals && goals.last_daily_streak) lines.push(`⌛ Current streak is ${humanize(goals.last_daily_streak.count)} days`);
+  if (karma !== undefined) lines.push(`🏆 ${formatNumber(karma)} Karma Points`);
+  if (days_items && days_items[0]) lines.push(`🌞 Completed ${formatNumber(days_items[0].total_completed)} tasks today`);
+  if (week_items && week_items[0]) lines.push(`📅 Completed ${formatNumber(week_items[0].total_completed)} tasks this week`);
+  if (completed_count !== undefined) lines.push(`✅ Completed ${formatNumber(completed_count)} tasks so far`);
+  if (goals && goals.last_daily_streak) lines.push(`⌛ Current streak is ${formatNumber(goals.last_daily_streak.count)} days`);
 
   if (lines.length === 0) return;
 
