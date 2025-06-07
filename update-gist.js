@@ -1,15 +1,12 @@
+require("dotenv").config();
 const axios = require('axios');
-const { Octokit } = require('@octokit/rest');
+const humanize = require("humanize-number");
 
 const todoistToken = process.env.TODOIST_API_KEY;
 const gistId = process.env.GIST_ID;
 const githubToken = process.env.GH_TOKEN;
 
-if (!todoistToken || !gistId || !githubToken) {
-  console.error('Missing required environment variables. Please set TODOIST_API_KEY, GIST_ID, and GH_TOKEN.');
-  process.exit(1);
-}
-
+const { Octokit } = require("@octokit/rest");
 const octokit = new Octokit({ auth: githubToken });
 
 async function fetchKarma() {
@@ -26,99 +23,47 @@ async function fetchKarma() {
   }
 }
 
-function getTodayDate() {
-  return new Date().toISOString().split('T')[0];
-}
-
-function getWeekStartDate() {
-  const now = new Date();
-  const day = now.getDay();
-  const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Monday as first day
-  const monday = new Date(now.setDate(diff));
-  return monday.toISOString().split('T')[0];
-}
-
-async function fetchStats() {
+async function updateGist(data) {
+  let gist;
   try {
-    const res = await axios.get('https://api.todoist.com/rest/v2/tasks', {
-      headers: {
-        Authorization: `Bearer ${todoistToken}`
-      }
-    });
-    const tasks = res.data;
-    const today = tasks.filter(task => {
-      return task.due && task.due.date === getTodayDate();
-    });
-    return {
-      total: tasks.length,
-      today: today.length
-    };
+    gist = await octokit.gists.get({ gist_id: gistId });
   } catch (error) {
-    console.error('Error fetching Todoist tasks:', error.response ? error.response.data : error.message);
-    throw error;
+    console.error(`Unable to get gist\n${error}`);
+    return;
   }
-}
 
-async function updateGist(stats, karma) {
+  const lines = [];
+  const { karma_points, completed_count, days_items, week_items, goals } = data;
+
+  if (karma_points !== undefined) lines.push(`🏆 ${humanize(karma_points)} Karma Points`);
+  if (days_items && days_items[0]) lines.push(`🌞 Completed ${days_items[0].total_completed} tasks today`);
+  if (week_items && week_items[0]) lines.push(`📅 Completed ${week_items[0].total_completed} tasks this week`);
+  if (completed_count !== undefined) lines.push(`✅ Completed ${humanize(completed_count)} tasks so far`);
+  if (goals && goals.last_daily_streak) lines.push(`⌛ Current streak is ${humanize(goals.last_daily_streak.count)} days`);
+
+  if (lines.length === 0) return;
+
   try {
-    const gist = await octokit.gists.get({ gist_id: gistId });
     const filename = Object.keys(gist.data.files)[0];
-    const content = `
-🦇 **BATMAN Todoist Stats** 🦇
-
-🏆 **${karma.karma}** Karma Points
-🌞 **${karma.completed_today}** tasks completed today
-📅 **${karma.completed_this_week}** tasks completed this week
-✅ **${karma.completed_total}** tasks completed so far
-⌛ **${karma.current_streak}**-day streak
-
----
-
-🛠️ **Total Open Tasks:** ${stats.total}
-🗓️ **Tasks Due Today:** ${stats.today}
-
-"It's not who I am underneath, but what I do that defines me."
-
-_Updated at ${new Date().toLocaleString()}_
-`;
     await octokit.gists.update({
       gist_id: gistId,
       files: {
         [filename]: {
-          content
-        }
-      }
+          filename: `✅ Todoist Stats`,
+          content: lines.join("\n"),
+        },
+      },
     });
     console.log('Gist updated successfully.');
   } catch (error) {
-    console.error('Error updating Gist:', error.response ? error.response.data : error.message);
-    throw error;
+    console.error(`Unable to update gist\n${error}`);
   }
 }
 
 (async () => {
   try {
-    const stats = await fetchStats();
     const karmaData = await fetchKarma();
-    const todayDate = getTodayDate();
-    const weekStart = getWeekStartDate();
-    const daysDetails = karmaData && Array.isArray(karmaData.days_details) ? karmaData.days_details : [];
-    let completed_today = 0;
-    let completed_this_week = 0;
-    if (daysDetails.length > 0) {
-      completed_today = daysDetails.find(d => d && d.date === todayDate)?.completed || 0;
-      completed_this_week = daysDetails.filter(d => d && d.date >= weekStart).reduce((sum, d) => sum + (d.completed || 0), 0);
-    }
-    const completed_total = karmaData && karmaData.completed_count ? karmaData.completed_count : 0;
-    const karma = karmaData && karmaData.karma_points ? karmaData.karma_points : 0;
-    const current_streak = karmaData && karmaData.current_daily_streak ? karmaData.current_daily_streak : 0;
-    await updateGist(stats, {
-      completed_today,
-      completed_this_week,
-      completed_total,
-      karma,
-      current_streak
-    });
+    await updateGist(karmaData);
   } catch (error) {
     console.error('Failed to update gist:', error);
     process.exit(1);
