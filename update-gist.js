@@ -1,24 +1,30 @@
 require("dotenv").config();
 const axios = require('axios');
 const humanize = require("humanize-number");
+const { getOctokit } = require("@actions/github");
+const fetch = require("node-fetch");
 
 const todoistToken = process.env.TODOIST_API_KEY;
 const gistId = process.env.GIST_ID;
 const githubToken = process.env.GH_TOKEN;
 
-const { Octokit } = require("@octokit/rest");
-const octokit = new Octokit({ auth: githubToken });
+const octokit = getOctokit(githubToken);
 
 async function fetchKarma() {
   try {
-    const res = await axios.get('https://api.todoist.com/sync/v9/completed/get_stats', {
-      headers: {
-        Authorization: `Bearer ${todoistToken}`
+    const response = await fetch(
+      `https://api.todoist.com/sync/v9/completed/get_stats`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${todoistToken}`,
+        },
       }
-    });
-    return res.data;
+    );
+    return await response.json();
   } catch (error) {
-    console.error('Error fetching Todoist karma:', error.response ? error.response.data : error.message);
+    console.error('Error fetching Todoist karma:', error);
     throw error;
   }
 }
@@ -26,16 +32,16 @@ async function fetchKarma() {
 async function updateGist(data) {
   let gist;
   try {
-    gist = await octokit.gists.get({ gist_id: gistId });
+    gist = await octokit.rest.gists.get({ gist_id: gistId });
   } catch (error) {
     console.error(`Unable to get gist\n${error}`);
     return;
   }
 
   const lines = [];
-  const { karma_points, completed_count, days_items, week_items, goals } = data;
+  const { karma, completed_count, days_items, week_items, goals } = data;
 
-  if (karma_points !== undefined) lines.push(`🏆 ${humanize(karma_points)} Karma Points`);
+  if (karma !== undefined) lines.push(`🏆 ${humanize(karma)} Karma Points`);
   if (days_items && days_items[0]) lines.push(`🌞 Completed ${days_items[0].total_completed} tasks today`);
   if (week_items && week_items[0]) lines.push(`📅 Completed ${week_items[0].total_completed} tasks this week`);
   if (completed_count !== undefined) lines.push(`✅ Completed ${humanize(completed_count)} tasks so far`);
@@ -45,7 +51,7 @@ async function updateGist(data) {
 
   try {
     const filename = Object.keys(gist.data.files)[0];
-    await octokit.gists.update({
+    await octokit.rest.gists.update({
       gist_id: gistId,
       files: {
         [filename]: {
