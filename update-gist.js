@@ -102,12 +102,16 @@ _Updated at ${new Date().toLocaleString()}_
     const karmaData = await fetchKarma();
     const todayDate = getTodayDate();
     const weekStart = getWeekStartDate();
-    const daysDetails = Array.isArray(karmaData.days_details) ? karmaData.days_details : [];
-    const completed_today = daysDetails.find(d => d.date === todayDate)?.completed || 0;
-    const completed_this_week = daysDetails.filter(d => d.date >= weekStart).reduce((sum, d) => sum + d.completed, 0);
-    const completed_total = karmaData.completed_count || 0;
-    const karma = karmaData.karma_points || 0;
-    const current_streak = karmaData.current_daily_streak || 0;
+    const daysDetails = karmaData && Array.isArray(karmaData.days_details) ? karmaData.days_details : [];
+    let completed_today = 0;
+    let completed_this_week = 0;
+    if (daysDetails.length > 0) {
+      completed_today = daysDetails.find(d => d && d.date === todayDate)?.completed || 0;
+      completed_this_week = daysDetails.filter(d => d && d.date >= weekStart).reduce((sum, d) => sum + (d.completed || 0), 0);
+    }
+    const completed_total = karmaData && karmaData.completed_count ? karmaData.completed_count : 0;
+    const karma = karmaData && karmaData.karma_points ? karmaData.karma_points : 0;
+    const current_streak = karmaData && karmaData.current_daily_streak ? karmaData.current_daily_streak : 0;
     await updateGist(stats, {
       completed_today,
       completed_this_week,
