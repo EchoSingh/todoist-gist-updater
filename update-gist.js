@@ -1,6 +1,5 @@
 const axios = require('axios');
 const { Octokit } = require("@octokit/rest");
-const fetch = require("node-fetch");
 
 const todoistToken = process.env.TODOIST_API_KEY;
 const gistId = process.env.GIST_ID;
@@ -12,17 +11,16 @@ const formatNumber = (n) => (typeof n === 'number' ? n.toLocaleString() : n);
 
 async function fetchKarma() {
   try {
-    const response = await fetch(
+    const response = await axios.get(
       `https://api.todoist.com/sync/v9/completed/get_stats`,
       {
-        method: "GET",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${todoistToken}`,
         },
       }
     );
-    return await response.json();
+    return response.data;
   } catch (error) {
     console.error('Error fetching Todoist karma:', error);
     throw error;
