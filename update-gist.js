@@ -1,12 +1,12 @@
 const axios = require('axios');
-const { getOctokit } = require("@actions/github");
+const { Octokit } = require("@octokit/rest");
 const fetch = require("node-fetch");
 
 const todoistToken = process.env.TODOIST_API_KEY;
 const gistId = process.env.GIST_ID;
 const githubToken = process.env.GH_TOKEN;
 
-const octokit = getOctokit(githubToken);
+const octokit = new Octokit({ auth: githubToken });
 
 const formatNumber = (n) => (typeof n === 'number' ? n.toLocaleString() : n);
 
@@ -32,7 +32,7 @@ async function fetchKarma() {
 async function updateGist(data) {
   let gist;
   try {
-    gist = await octokit.rest.gists.get({ gist_id: gistId });
+    gist = await octokit.gists.get({ gist_id: gistId });
   } catch (error) {
     console.error(`Unable to get gist\n${error}`);
     return;
@@ -51,7 +51,7 @@ async function updateGist(data) {
 
   try {
     const filename = Object.keys(gist.data.files)[0];
-    await octokit.rest.gists.update({
+    await octokit.gists.update({
       gist_id: gistId,
       files: {
         [filename]: {
