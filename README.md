@@ -21,11 +21,7 @@ See it live: [My Gist](https://gist.github.com/EchoSingh/a69a6866ee53ca536715407
 
 ## 🚀 Setup Instructions
 
-### 1. Fork or Clone This Repo
-```bash
-git clone https://github.com/EchoSingh/todoist-gist-updater.git
-cd todoist-gist-updater
-```
+### 1. Fork This Repo
 
 ### 2. Create a GitHub Gist
 - Go to [gist.github.com](https://gist.github.com/)
@@ -47,17 +43,12 @@ In your repo, go to **Settings > Secrets and variables > Actions** and add:
 - `GIST_ID` — your Gist ID (from step 2)
 - `GH_TOKEN` — your GitHub token (from step 4)
 
-### 6. Push to GitHub
-```bash
-git add .
-git commit -m "Initial setup"
-git push origin main
-```
+### 6. Run workflow 
+
 
 ## 🛠️ How It Works
 - The workflow in `.github/workflows/todoist-gist.yml` runs every hour, on push, or manually
 - It fetches your Todoist stats and updates your Gist with vibrant, readable stats
-- Example Gist: [Your Gist Link](https://gist.github.com/EchoSingh/a69a6866ee53ca5367154074b5cc328b)
 
 ## 📝 Customization
 - Edit `update-gist.js` to change the emoji, formatting, or add more stats
